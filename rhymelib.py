@@ -1,7 +1,4 @@
 import cPickle
-import nltk
-from nltk.corpus import cmudict
-from nltk.corpus import brown
 
 from collections import defaultdict
 
@@ -71,7 +68,6 @@ class RhymeDB(object):
         f.close()
 
     def generate(self, obscurity_limit):
-        _load_corpora(require_brown=(obscurity_limit is not None))
         self.wordset = RhymeDB._build_wordset(obscurity_limit=obscurity_limit)
         self.word_to_rhyme_dict = {}
         self.word_to_pronunciation_dict = {}
@@ -87,9 +83,33 @@ class RhymeDB(object):
 
     @classmethod
     def _build_wordset(clazz, obscurity_limit):
+        # I'm sorry this method is so disgusting.
+        # It's all in the cause of fast loading in the main case.
+
+        from nltk import FreqDist
+
+        # Ensure corpora are loaded.
+        try:
+            from nltk.corpus import cmudict
+            cmudict.entries()
+        except LookupError:
+            print "CMUDict corpus not found. Downloading..."
+            from nltk import download
+            download('cmudict')
+            print "[Done]"
+        if obscurity_limit is not None:
+            from nltk.corpus import brown
+            try:
+                brown.words()
+            except LookupError:
+                print "Brown corpus not found. Downloading...",
+                from nltk import download
+                download('brown')
+                print "[Done]"
+
         words = cmudict.entries()
         if obscurity_limit is not None:
-            freqs = nltk.FreqDist([w.lower() for w in brown.words()])
+            freqs = FreqDist([w.lower() for w in brown.words()])
             words = sorted(words,
                            key=lambda x: freqs[x[0].lower()],
                            reverse=True)
@@ -150,22 +170,3 @@ def _get_rhyme_type(pron):
     if len(stress_list) > 0:
         pron = pron[stress_list[0][1]:]
     return tuple(pron)
-
-
-def _load_corpora(require_brown=True):
-    from nltk.corpus import cmudict
-    try:
-        cmudict.entries()
-    except LookupError:
-        print "CMUDict corpus not found. Downloading..."
-        nltk.download('cmudict')
-        print "[Done]"
-
-    if require_brown:
-        from nltk.corpus import brown
-        try:
-            brown.words()
-        except LookupError:
-            print "Brown corpus not found. Downloading...",
-            nltk.download('brown')
-            print "[Done]"
