@@ -1,7 +1,7 @@
 import rhymelib
 import random
 
-words = list(rhymelib.words())
+rhymelib.OBSCURITY_LIMIT = 1000
 
 
 class Sonnet(object):
@@ -48,7 +48,7 @@ class Line(object):
         final_word = None
         if rhyme is None:
             while True:
-                final_word = random.choice(words)
+                final_word = random.choice(list(rhymelib.words()))
                 if len(sonnetworthy_rhymes(final_word)) > 0:
                     # The word has rhyming potential - let's use it!
                     break
@@ -64,7 +64,7 @@ class Line(object):
                                   for word in wordlist))
         stress_needed = 1 - rhymelib.stresses(wordlist[0])[0]
         while syllables_left > 0:
-            word = random.choice(words)
+            word = random.choice(list(rhymelib.words()))
             num_syllables = rhymelib.getnumsyllables(word)
             stresses = rhymelib.stresses(word)
             if (num_syllables <= syllables_left and

@@ -11,34 +11,49 @@ _word_to_pronunciation_dict = None
 _rhyme_to_words_dict = None
 
 DATABASE_FILE = "rhyme.db"
-WORDSET_LENGTH = 2000
+OBSCURITY_LIMIT = 2000
 
 
 class RhymeDB(object):
 
     _instance = None
 
-    def __init__(self):
+    def __init__(self, obscurity_limit):
         self.wordset = None
         self.word_to_rhyme_dict = None
         self.word_to_pronunciation_dict = None
         self.rhyme_to_words_dict = None
-        self.load()
+        self.obscurity_limit = obscurity_limit
+        self.load(obscurity_limit)
 
     @classmethod
-    def get_instance(clazz):
+    def get_instance(clazz, obscurity_limit=None):
+        if obscurity_limit is None:
+            obscurity_limit = OBSCURITY_LIMIT
+
         if clazz._instance is None:
-            clazz._instance = RhymeDB()
+            clazz._instance = RhymeDB(obscurity_limit=obscurity_limit)
+
+        if clazz._instance.obscurity_limit != obscurity_limit:
+            clazz._instance.load(obscurity_limit=obscurity_limit)
+
         return clazz._instance
 
-    def load(self):
+    def load(self, obscurity_limit):
         print "Loading rhyme database."
+        valid = True
         try:
             self.load_from_file(DATABASE_FILE)
             print "Database loaded.\n"
         except IOError:
-            print "\nCould not find database. Generating a new DB..."
-            self.generate()
+            print "Could not find database file."
+            valid = False
+        if valid and self.obscurity_limit != obscurity_limit:
+            print "Loaded DB doesn't match the requested parameters."
+            valid = False
+        if not valid:
+            print "\nGenerating a new DB..."
+            self.generate(obscurity_limit)
             print "New DB generated. Saving to disc...",
             self.save_to_file(DATABASE_FILE)
             print "[Saved]\n"
@@ -55,12 +70,13 @@ class RhymeDB(object):
         pickler.dump(self)
         f.close()
 
-    def generate(self):
-        _load_corpora()
-        self.wordset = RhymeDB._build_wordset()
+    def generate(self, obscurity_limit):
+        _load_corpora(require_brown=(obscurity_limit is not None))
+        self.wordset = RhymeDB._build_wordset(obscurity_limit=obscurity_limit)
         self.word_to_rhyme_dict = {}
         self.word_to_pronunciation_dict = {}
         self.rhyme_to_words_dict = defaultdict(set)
+        self.obscurity_limit = obscurity_limit
         for word, pron in self.wordset:
             if word in self.word_to_rhyme_dict:
                 continue  # Skip nonstandard pronunciations
@@ -70,11 +86,16 @@ class RhymeDB(object):
             self.rhyme_to_words_dict[rhyme_type].add(word)
 
     @classmethod
-    def _build_wordset(clazz):
+    def _build_wordset(clazz, obscurity_limit):
         words = cmudict.entries()
-        freqs = nltk.FreqDist([w.lower() for w in brown.words()])
-        words = sorted(words, key=lambda x: freqs[x[0].lower()], reverse=True)
-        return words[:WORDSET_LENGTH]
+        if obscurity_limit is not None:
+            freqs = nltk.FreqDist([w.lower() for w in brown.words()])
+            words = sorted(words,
+                           key=lambda x: freqs[x[0].lower()],
+                           reverse=True)
+            return words[:obscurity_limit]
+        else:
+            return list(words)
 
 
 def words():
@@ -131,18 +152,20 @@ def _get_rhyme_type(pron):
     return tuple(pron)
 
 
-def _load_corpora():
+def _load_corpora(require_brown=True):
     from nltk.corpus import cmudict
-    from nltk.corpus import brown
     try:
         cmudict.entries()
     except LookupError:
         print "CMUDict corpus not found. Downloading..."
         nltk.download('cmudict')
         print "[Done]"
-    try:
-        brown.words()
-    except LookupError:
-        print "Brown corpus not found. Downloading...",
-        nltk.download('brown')
-        print "[Done]"
+
+    if require_brown:
+        from nltk.corpus import brown
+        try:
+            brown.words()
+        except LookupError:
+            print "Brown corpus not found. Downloading...",
+            nltk.download('brown')
+            print "[Done]"
