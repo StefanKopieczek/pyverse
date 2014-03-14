@@ -1,8 +1,6 @@
 import rhymelib
 import random
 
-# rhymelib.USE_TEST_DICT = True
-
 words = list(rhymelib.words())
 
 
