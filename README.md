@@ -1,4 +1,4 @@
 pyverse
 =======
 
-Auto-generated poems and in Python
+Auto-generated poems in Python
