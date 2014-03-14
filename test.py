@@ -1,9 +1,13 @@
 import bad_sonnet
 
+
 def sonnet():
     while True:
         try:
-            print bad_sonnet.Sonnet()
+            return bad_sonnet.Sonnet()
             break
         except IndexError:
             pass
+
+if __name__ == "__main__":
+    print sonnet()

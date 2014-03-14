@@ -35,13 +35,13 @@ class RhymeDB(object):
         print "Loading rhyme database."
         try:
             self.load_from_file(DATABASE_FILE)
-            print "Database loaded."
+            print "Database loaded.\n"
         except IOError:
             print "\nCould not find database. Generating a new DB..."
             self.generate()
             print "New DB generated. Saving to disc...",
             self.save_to_file(DATABASE_FILE)
-            print "[Saved]"
+            print "[Saved]\n"
 
     def load_from_file(self, addr):
         f = open(addr, 'r')
