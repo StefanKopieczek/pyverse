@@ -1,3 +1,7 @@
+# Rhyme database
+rhyme.db
+
+# Python files
 *.py[cod]
 
 # Swap files
