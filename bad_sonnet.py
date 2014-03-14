@@ -17,7 +17,7 @@ class Sonnet(object):
 
 class Stanza(object):
     def __str__(self):
-        return '\n'.join([str(line) for line in self.lines])
+        return '\n'.join([str(line) for line in self.lines]) + '.'
 
 
 class Quatrain(Stanza):
