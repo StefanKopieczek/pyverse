@@ -41,7 +41,9 @@ class Line(object):
         self.contents = Line.expand_line([self.final_word])
 
     def __str__(self):
-        return self.contents[0].title() + ' ' + ' '.join(self.contents[1:])
+        return (self.contents[0][0].upper() +
+                self.contents[0][1:] + ' ' +
+                ' '.join(self.contents[1:]))
 
     @classmethod
     def choose_final_word(clazz, rhyme):
