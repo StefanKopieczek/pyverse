@@ -158,8 +158,11 @@ def stresses(word):
     db = RhymeDB.get_instance()
     pron = db.word_to_pronunciation_dict[word]
     vowels = [sound for sound in pron if sound[-1] in ['0', '1', '2']]
-    main_stress_idx = [idx for idx, vowel in enumerate(vowels)
-                       if vowel[-1] == '1'][0]
+    main_stresses = [idx for idx, vowel in enumerate(vowels)
+                     if vowel[-1] == '1']
+    main_stress_idx = 0
+    if len(main_stresses) != 0:
+        main_stress_idx = main_stresses[0]
     parity = main_stress_idx % 2
     return [(idx + parity + 1) % 2 for idx in xrange(len(vowels))]
 
