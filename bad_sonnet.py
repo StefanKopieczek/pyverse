@@ -81,3 +81,7 @@ def sonnetworthy_rhymes(word):
             if word != rhyme and
             (rhymelib.stresses(rhyme)[-1] == 1 or
              rhymelib.getnumsyllables(rhyme) == 1)]
+
+
+if __name__ == "__main__":
+    print Sonnet()
