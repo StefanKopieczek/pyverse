@@ -7,12 +7,13 @@ _word_to_rhyme_dict = None
 _word_to_pronunciation_dict = None
 _rhyme_to_words_dict = None
 
-DATABASE_FILE = "rhyme.db"
+DATABASE_FILE_PREFIX = "rhymedb"
 OBSCURITY_LIMIT = 2000
 
 
 class RhymeDB(object):
 
+    version_uid = 1
     _instance = None
 
     def __init__(self, obscurity_limit):
@@ -36,23 +37,21 @@ class RhymeDB(object):
 
         return clazz._instance
 
+    def get_db_filename(self):
+        return (DATABASE_FILE_PREFIX +
+                "V%dO%s.db" % (RhymeDB.version_uid, str(self.obscurity_limit)))
+
     def load(self, obscurity_limit):
         print "Loading rhyme database."
-        valid = True
+        db_filename = self.get_db_filename()
         try:
-            self.load_from_file(DATABASE_FILE)
+            self.load_from_file(db_filename)
             print "Database loaded.\n"
         except IOError:
-            print "Could not find database file."
-            valid = False
-        if valid and self.obscurity_limit != obscurity_limit:
-            print "Loaded DB doesn't match the requested parameters."
-            valid = False
-        if not valid:
-            print "\nGenerating a new DB..."
+            print "No suitable rhyme database found. Generating a new DB."
             self.generate(obscurity_limit)
             print "New DB generated. Saving to disc...",
-            self.save_to_file(DATABASE_FILE)
+            self.save_to_file(db_filename)
             print "[Saved]\n"
 
     def load_from_file(self, addr):

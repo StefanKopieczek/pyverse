@@ -1,5 +1,5 @@
-# Rhyme database
-rhyme.db
+# Rhyme databases
+*.db
 
 # Python files
 *.py[cod]
