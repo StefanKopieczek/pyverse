@@ -2,7 +2,7 @@ import rhymelib
 import itertools
 import random
 
-rhymelib.OBSCURITY_LIMIT = 1000
+rhymelib.OBSCURITY_LIMIT = 4000
 
 
 class Villanelle(object):
